@@ -1307,15 +1307,19 @@ class WCS_Cart_Renewal {
 			return;
 		}
 
-		$cart_fees = $cart->get_fees();
+		$renewal_order = $this->get_order();
+
+		if ( ! $renewal_order ) {
+			return;
+		}
 
 		// Fees are naturally recurring if they have been applied to the renewal order. Generate a key (name + amount) for each fee applied to the order.
 		$renewal_order_fees = array();
-		if ($this->get_order()){ // fatal error casued by the foreach, if get_order returns false
-			foreach ( $this->get_order()->get_fees() as $item_id => $fee_line_item ) {
-				$renewal_order_fees[ $item_id ] = $fee_line_item->get_name() . wc_format_decimal( $fee_line_item->get_total() );
-			}
-	        }
+		$cart_fees          = $cart->get_fees();
+
+		foreach ( $renewal_order->get_fees() as $item_id => $fee_line_item ) {
+			$renewal_order_fees[ $item_id ] = $fee_line_item->get_name() . wc_format_decimal( $fee_line_item->get_total() );
+		}
 
 		// WC doesn't have a method for removing fees individually so we clear them and re-add them where applicable.
 		if ( is_callable( array( $cart, 'fees_api' ) ) ) { // WC 3.2 +
